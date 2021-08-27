@@ -1,0 +1,35 @@
+From 4dd382f0bb6f894bc5bdd5a54093f651c88ee5ae Mon Sep 17 00:00:00 2001
+From: Chirayu Desai <chirayudesai1@gmail.com>
+Date: Fri, 27 Aug 2021 02:07:00 +0530
+Subject: [PATCH] DO NOT MERGE: ONLY FOR TESTING: Always allowBackup
+
+Change-Id: I2d82c676354353589c0d21e47b5ba140650194e1
+---
+
+diff --git a/core/java/android/content/pm/PackageParser.java b/core/java/android/content/pm/PackageParser.java
+index 70e4e6c..76accc3 100644
+--- a/core/java/android/content/pm/PackageParser.java
++++ b/core/java/android/content/pm/PackageParser.java
+@@ -3371,8 +3371,7 @@
+                     outError);
+         }
+ 
+-        boolean allowBackup = sa.getBoolean(
+-                com.android.internal.R.styleable.AndroidManifestApplication_allowBackup, true);
++        boolean allowBackup = true;
+         if (allowBackup) {
+             ai.flags |= ApplicationInfo.FLAG_ALLOW_BACKUP;
+ 
+diff --git a/core/java/android/content/pm/parsing/ParsingPackageUtils.java b/core/java/android/content/pm/parsing/ParsingPackageUtils.java
+index ab0ed51..55598b5 100644
+--- a/core/java/android/content/pm/parsing/ParsingPackageUtils.java
++++ b/core/java/android/content/pm/parsing/ParsingPackageUtils.java
+@@ -1931,7 +1931,7 @@
+         // CHECKSTYLE:off
+         pkg
+                 // Default true
+-                .setAllowBackup(bool(true, R.styleable.AndroidManifestApplication_allowBackup, sa))
++                .setAllowBackup(true)
+                 .setAllowClearUserData(bool(true, R.styleable.AndroidManifestApplication_allowClearUserData, sa))
+                 .setAllowClearUserDataOnFailedRestore(bool(true, R.styleable.AndroidManifestApplication_allowClearUserDataOnFailedRestore, sa))
+                 .setAllowNativeHeapPointerTagging(bool(true, R.styleable.AndroidManifestApplication_allowNativeHeapPointerTagging, sa))

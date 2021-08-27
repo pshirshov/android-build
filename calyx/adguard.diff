@@ -1,0 +1,181 @@
+diff -ur a/frameworks/base/core/java/android/net/ConnectivityManager.java b/frameworks/base/core/java/android/net/ConnectivityManager.java
+--- a/frameworks/base/core/java/android/net/ConnectivityManager.java	2021-08-27 14:24:20.944210754 +0100
++++ b/frameworks/base/core/java/android/net/ConnectivityManager.java	2021-08-27 20:00:51.878216885 +0100
+@@ -803,6 +803,14 @@
+     /**
+      * @hide
+      */
++    public static final String PRIVATE_DNS_MODE_ADGUARD = "adguard";
++    /**
++     * @hide
++     */
++    public static final String PRIVATE_DNS_MODE_ADHOLE = "adhole";
++    /**
++     * @hide
++     */
+     public static final String PRIVATE_DNS_MODE_OPPORTUNISTIC = "opportunistic";
+     /**
+      * @hide
+@@ -814,6 +822,16 @@
+      */
+     public static final String PRIVATE_DNS_SPECIFIER_CLOUDFLARE = "one.one.one.one";
+     /**
++     * @hide
++     * Alternative: dns.adguard.com
++     */
++    public static final String PRIVATE_DNS_SPECIFIER_ADGUARD = "dns.adguard.com";
++    /**
++     * @hide
++     * Alternative: dns.adhole.org
++     */
++    public static final String PRIVATE_DNS_SPECIFIER_ADHOLE = "dns.adhole.org";
++    /**
+      * The default Private DNS mode.
+      *
+      * This may change from release to release or may become dependent upon
+diff -ur a/frameworks/base/services/core/java/com/android/server/connectivity/DnsManager.java b/frameworks/base/services/core/java/com/android/server/connectivity/DnsManager.java
+--- a/frameworks/base/services/core/java/com/android/server/connectivity/DnsManager.java	2021-08-27 14:24:37.580627310 +0100
++++ b/frameworks/base/services/core/java/com/android/server/connectivity/DnsManager.java	2021-08-27 19:52:02.902895146 +0100
+@@ -19,8 +19,12 @@
+ import static android.net.ConnectivityManager.PRIVATE_DNS_DEFAULT_MODE_FALLBACK;
+ import static android.net.ConnectivityManager.PRIVATE_DNS_MODE_OFF;
+ import static android.net.ConnectivityManager.PRIVATE_DNS_MODE_CLOUDFLARE;
++import static android.net.ConnectivityManager.PRIVATE_DNS_MODE_ADGUARD;
++import static android.net.ConnectivityManager.PRIVATE_DNS_MODE_ADHOLE;
+ import static android.net.ConnectivityManager.PRIVATE_DNS_MODE_PROVIDER_HOSTNAME;
+ import static android.net.ConnectivityManager.PRIVATE_DNS_SPECIFIER_CLOUDFLARE;
++import static android.net.ConnectivityManager.PRIVATE_DNS_SPECIFIER_ADGUARD;
++import static android.net.ConnectivityManager.PRIVATE_DNS_SPECIFIER_ADHOLE;
+ import static android.provider.Settings.Global.DNS_RESOLVER_MAX_SAMPLES;
+ import static android.provider.Settings.Global.DNS_RESOLVER_MIN_SAMPLES;
+ import static android.provider.Settings.Global.DNS_RESOLVER_SAMPLE_VALIDITY_SECONDS;
+@@ -146,6 +150,14 @@
+             return new PrivateDnsConfig(PRIVATE_DNS_SPECIFIER_CLOUDFLARE, null);
+         }
+ 
++        if (PRIVATE_DNS_MODE_ADGUARD.equals(mode)) {
++            return new PrivateDnsConfig(PRIVATE_DNS_SPECIFIER_ADGUARD, null);
++        }
++
++        if (PRIVATE_DNS_MODE_ADHOLE.equals(mode)) {
++            return new PrivateDnsConfig(PRIVATE_DNS_SPECIFIER_ADHOLE, null);
++        }
++
+         return new PrivateDnsConfig(useTls);
+     }
+ 
+Only in b/frameworks/base/services/core/java/com/android/server/connectivity: net
+diff -ur a/packages/apps/Settings/res/layout/private_dns_mode_dialog.xml b/packages/apps/Settings/res/layout/private_dns_mode_dialog.xml
+--- a/packages/apps/Settings/res/layout/private_dns_mode_dialog.xml	2021-08-27 14:35:35.767835675 +0100
++++ b/packages/apps/Settings/res/layout/private_dns_mode_dialog.xml	2021-08-27 19:52:22.679319154 +0100
+@@ -38,6 +38,14 @@
+             <include
+                 android:id="@+id/private_dns_mode_cloudflare"
+                 layout="@layout/preference_widget_dialog_radiobutton"/>
++                
++            <include
++                android:id="@+id/private_dns_mode_adguard"
++                layout="@layout/preference_widget_dialog_radiobutton"/>
++
++            <include
++                android:id="@+id/private_dns_mode_adhole"
++                layout="@layout/preference_widget_dialog_radiobutton"/>
+ 
+             <include
+                 android:id="@+id/private_dns_mode_opportunistic"
+diff -ur a/packages/apps/Settings/res/values/calyx_strings.xml b/packages/apps/Settings/res/values/calyx_strings.xml
+--- a/packages/apps/Settings/res/values/calyx_strings.xml	2021-08-27 14:35:39.355914182 +0100
++++ b/packages/apps/Settings/res/values/calyx_strings.xml	2021-08-27 20:00:51.878216885 +0100
+@@ -16,6 +16,8 @@
+ -->
+ <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+     <string name="private_dns_mode_cloudflare" translatable="false">Cloudflare DNS</string>
++    <string name="private_dns_mode_adguard" translatable="false">AdGuard DNS</string>
++    <string name="private_dns_mode_adhole" translatable="false">AdHole DNS</string>
+ 
+     <string name="calyxos_version">CalyxOS version</string>
+ 
+diff -ur a/packages/apps/Settings/res/values-ru/calyx_strings.xml b/packages/apps/Settings/res/values-ru/calyx_strings.xml
+--- a/packages/apps/Settings/res/values-ru/calyx_strings.xml	2021-08-27 14:35:43.412002908 +0100
++++ b/packages/apps/Settings/res/values-ru/calyx_strings.xml	2021-08-27 19:52:42.043734342 +0100
+@@ -2,6 +2,8 @@
+ <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+     <string name="calyxos_version">Версия CalyxOS</string>
+     <string name="private_dns_mode_cloudflare">Cloudflare DNS</string>
++    <string name="private_dns_mode_adguard" translatable="false">AdGuard DNS</string>
++    <string name="private_dns_mode_adhole" translatable="false">AdHole DNS</string>
+     <string name="deny_new_usb_disabled">Всегда разрешать новые USB-устройства</string>
+     <string name="deny_new_usb_dynamic">Разрешить новые USB-устройства при разблокировке</string>
+     <string name="deny_new_usb_enabled">Запретить новые USB-устройства</string>
+diff -ur a/packages/apps/Settings/src/com/android/settings/network/PrivateDnsModeDialogPreference.java b/packages/apps/Settings/src/com/android/settings/network/PrivateDnsModeDialogPreference.java
+--- a/packages/apps/Settings/src/com/android/settings/network/PrivateDnsModeDialogPreference.java	2021-08-27 19:44:27.017123494 +0100
++++ b/packages/apps/Settings/src/com/android/settings/network/PrivateDnsModeDialogPreference.java	2021-08-27 19:54:32.490102519 +0100
+@@ -18,6 +18,8 @@
+ import static android.net.ConnectivityManager.PRIVATE_DNS_DEFAULT_MODE_FALLBACK;
+ import static android.net.ConnectivityManager.PRIVATE_DNS_MODE_OFF;
+ import static android.net.ConnectivityManager.PRIVATE_DNS_MODE_CLOUDFLARE;
++import static android.net.ConnectivityManager.PRIVATE_DNS_MODE_ADGUARD;
++import static android.net.ConnectivityManager.PRIVATE_DNS_MODE_ADHOLE;
+ import static android.net.ConnectivityManager.PRIVATE_DNS_MODE_OPPORTUNISTIC;
+ import static android.net.ConnectivityManager.PRIVATE_DNS_MODE_PROVIDER_HOSTNAME;
+ 
+@@ -76,6 +78,8 @@
+         PRIVATE_DNS_MAP = new HashMap<>();
+         PRIVATE_DNS_MAP.put(PRIVATE_DNS_MODE_OFF, R.id.private_dns_mode_off);
+         PRIVATE_DNS_MAP.put(PRIVATE_DNS_MODE_CLOUDFLARE, R.id.private_dns_mode_cloudflare);
++        PRIVATE_DNS_MAP.put(PRIVATE_DNS_MODE_ADGUARD, R.id.private_dns_mode_adguard);
++        PRIVATE_DNS_MAP.put(PRIVATE_DNS_MODE_ADHOLE, R.id.private_dns_mode_adhole);
+         PRIVATE_DNS_MAP.put(PRIVATE_DNS_MODE_OPPORTUNISTIC, R.id.private_dns_mode_opportunistic);
+         PRIVATE_DNS_MAP.put(PRIVATE_DNS_MODE_PROVIDER_HOSTNAME, R.id.private_dns_mode_provider);
+     }
+@@ -185,6 +189,12 @@
+         final RadioButton cloudflareRadioButton =
+                 view.findViewById(R.id.private_dns_mode_cloudflare);
+         cloudflareRadioButton.setText(R.string.private_dns_mode_cloudflare);
++        final RadioButton adguardRadioButton =
++                view.findViewById(R.id.private_dns_mode_adguard);
++        adguardRadioButton.setText(R.string.private_dns_mode_adguard);
++        final RadioButton adholeRadioButton =
++                view.findViewById(R.id.private_dns_mode_adhole);
++        adholeRadioButton.setText(R.string.private_dns_mode_adhole);
+         final RadioButton opportunisticRadioButton =
+                 view.findViewById(R.id.private_dns_mode_opportunistic);
+         opportunisticRadioButton.setText(R.string.private_dns_mode_opportunistic);
+@@ -228,6 +238,10 @@
+             mMode = PRIVATE_DNS_MODE_OFF;
+         } else if (checkedId == R.id.private_dns_mode_cloudflare) {
+             mMode = PRIVATE_DNS_MODE_CLOUDFLARE;
++        } else if (checkedId == R.id.private_dns_mode_adguard) {
++            mMode = PRIVATE_DNS_MODE_ADGUARD;
++        } else if (checkedId == R.id.private_dns_mode_adhole) {
++            mMode = PRIVATE_DNS_MODE_ADHOLE;
+         } else if (checkedId == R.id.private_dns_mode_opportunistic) {
+             mMode = PRIVATE_DNS_MODE_OPPORTUNISTIC;
+         } else if (checkedId == R.id.private_dns_mode_provider) {
+diff -ur a/packages/apps/Settings/src/com/android/settings/network/PrivateDnsPreferenceController.java b/packages/apps/Settings/src/com/android/settings/network/PrivateDnsPreferenceController.java
+--- a/packages/apps/Settings/src/com/android/settings/network/PrivateDnsPreferenceController.java	2021-08-27 14:24:56.045086962 +0100
++++ b/packages/apps/Settings/src/com/android/settings/network/PrivateDnsPreferenceController.java	2021-08-27 19:53:16.676476928 +0100
+@@ -18,6 +18,8 @@
+ 
+ import static android.net.ConnectivityManager.PRIVATE_DNS_MODE_OFF;
+ import static android.net.ConnectivityManager.PRIVATE_DNS_MODE_CLOUDFLARE;
++import static android.net.ConnectivityManager.PRIVATE_DNS_MODE_ADGUARD;
++import static android.net.ConnectivityManager.PRIVATE_DNS_MODE_ADHOLE;
+ import static android.net.ConnectivityManager.PRIVATE_DNS_MODE_OPPORTUNISTIC;
+ import static android.net.ConnectivityManager.PRIVATE_DNS_MODE_PROVIDER_HOSTNAME;
+ import static android.provider.Settings.Global.PRIVATE_DNS_DEFAULT_MODE;
+@@ -130,6 +132,14 @@
+                 return dnsesResolved
+                         ? res.getString(R.string.private_dns_mode_cloudflare)
+                         : res.getString(R.string.private_dns_mode_provider_failure);
++            case PRIVATE_DNS_MODE_ADGUARD:
++                return dnsesResolved
++                        ? res.getString(R.string.private_dns_mode_adguard)
++                        : res.getString(R.string.private_dns_mode_provider_failure);
++            case PRIVATE_DNS_MODE_ADHOLE:
++                return dnsesResolved
++                        ? res.getString(R.string.private_dns_mode_adhole)
++                        : res.getString(R.string.private_dns_mode_provider_failure);
+             case PRIVATE_DNS_MODE_OPPORTUNISTIC:
+                 return dnsesResolved ? res.getString(R.string.private_dns_mode_on)
+                         : res.getString(R.string.private_dns_mode_opportunistic);
