@@ -1,6 +1,6 @@
 diff -ur a/frameworks/base/core/java/android/net/ConnectivityManager.java b/frameworks/base/core/java/android/net/ConnectivityManager.java
 --- a/frameworks/base/core/java/android/net/ConnectivityManager.java	2021-08-27 14:24:20.944210754 +0100
-+++ b/frameworks/base/core/java/android/net/ConnectivityManager.java	2021-08-27 20:00:51.878216885 +0100
++++ b/frameworks/base/core/java/android/net/ConnectivityManager.java	2021-08-28 12:49:30.965022872 +0100
 @@ -803,6 +803,14 @@
      /**
       * @hide
@@ -26,9 +26,9 @@ diff -ur a/frameworks/base/core/java/android/net/ConnectivityManager.java b/fram
 +    public static final String PRIVATE_DNS_SPECIFIER_ADGUARD = "dns.adguard.com";
 +    /**
 +     * @hide
-+     * Alternative: dns.adhole.org
++     * Alternative: uk.adhole.org
 +     */
-+    public static final String PRIVATE_DNS_SPECIFIER_ADHOLE = "dns.adhole.org";
++    public static final String PRIVATE_DNS_SPECIFIER_ADHOLE = "uk.adhole.org";
 +    /**
       * The default Private DNS mode.
       *
@@ -85,13 +85,13 @@ diff -ur a/packages/apps/Settings/res/layout/private_dns_mode_dialog.xml b/packa
                  android:id="@+id/private_dns_mode_opportunistic"
 diff -ur a/packages/apps/Settings/res/values/calyx_strings.xml b/packages/apps/Settings/res/values/calyx_strings.xml
 --- a/packages/apps/Settings/res/values/calyx_strings.xml	2021-08-27 14:35:39.355914182 +0100
-+++ b/packages/apps/Settings/res/values/calyx_strings.xml	2021-08-27 20:00:51.878216885 +0100
++++ b/packages/apps/Settings/res/values/calyx_strings.xml	2021-08-28 12:49:59.690564800 +0100
 @@ -16,6 +16,8 @@
  -->
  <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
      <string name="private_dns_mode_cloudflare" translatable="false">Cloudflare DNS</string>
 +    <string name="private_dns_mode_adguard" translatable="false">AdGuard DNS</string>
-+    <string name="private_dns_mode_adhole" translatable="false">AdHole DNS</string>
++    <string name="private_dns_mode_adhole" translatable="false">AdHole DNS (UK)</string>
  
      <string name="calyxos_version">CalyxOS version</string>
  

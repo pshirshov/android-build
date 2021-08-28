@@ -1,0 +1,78 @@
+diff -ur aa/core/java/android/content/pm/PackageParser.java bb/core/java/android/content/pm/PackageParser.java
+--- aa/core/java/android/content/pm/PackageParser.java	2021-08-28 01:11:00.666241255 +0100
++++ bb/core/java/android/content/pm/PackageParser.java	2021-08-28 01:12:22.151640881 +0100
+@@ -3375,7 +3375,8 @@
+                 com.android.internal.R.styleable.AndroidManifestApplication_allowBackup, true);
+         if (allowBackup) {
+             ai.flags |= ApplicationInfo.FLAG_ALLOW_BACKUP;
+-
++        }
++        
+             // backupAgent, killAfterRestore, fullBackupContent, backupInForeground,
+             // and restoreAnyVersion are only relevant if backup is possible for the
+             // given application.
+@@ -3424,7 +3425,6 @@
+             if (DEBUG_BACKUP) {
+                 Slog.v(TAG, "fullBackupContent=" + ai.fullBackupContent + " for " + pkgName);
+             }
+-        }
+ 
+         ai.theme = sa.getResourceId(
+                 com.android.internal.R.styleable.AndroidManifestApplication_theme, 0);
+diff -ur aa/services/backup/java/com/android/server/backup/UserBackupManagerService.java bb/services/backup/java/com/android/server/backup/UserBackupManagerService.java
+--- aa/services/backup/java/com/android/server/backup/UserBackupManagerService.java	2021-08-28 00:52:22.744917769 +0100
++++ bb/services/backup/java/com/android/server/backup/UserBackupManagerService.java	2021-08-28 01:16:00.817200183 +0100
+@@ -1522,9 +1522,13 @@
+             PackageInfo pkg = packages.get(a);
+             try {
+                 ApplicationInfo app = pkg.applicationInfo;
+-                if (((app.flags & ApplicationInfo.FLAG_ALLOW_BACKUP) == 0)
+-                        || app.backupAgentName == null
+-                        || (app.flags & ApplicationInfo.FLAG_FULL_BACKUP_ONLY) != 0) {
++                if ( (
++                          ((app.flags & ApplicationInfo.FLAG_ALLOW_BACKUP) == 0)
++                           || app.backupAgentName == null
++                           || ((app.flags & ApplicationInfo.FLAG_FULL_BACKUP_ONLY) != 0)
++                     ) && (
++                            (app.flags & ApplicationInfo.FLAG_SYSTEM) != 0
++                        )) {   
+                     packages.remove(a);
+                 } else {
+                     // we will need the shared library path, so look that up and store it here.
+diff -ur aa/services/backup/java/com/android/server/backup/utils/AppBackupUtils.java bb/services/backup/java/com/android/server/backup/utils/AppBackupUtils.java
+--- aa/services/backup/java/com/android/server/backup/utils/AppBackupUtils.java	2021-08-28 00:57:30.198432212 +0100
++++ bb/services/backup/java/com/android/server/backup/utils/AppBackupUtils.java	2021-08-28 01:02:14.421631553 +0100
+@@ -73,7 +73,7 @@
+     static boolean appIsEligibleForBackup(
+             ApplicationInfo app, PackageManagerInternal packageManager, int userId) {
+         // 1. their manifest states android:allowBackup="false"
+-        if ((app.flags & ApplicationInfo.FLAG_ALLOW_BACKUP) == 0) {
++        if (((app.flags & ApplicationInfo.FLAG_ALLOW_BACKUP) == 0) && ((app.flags & ApplicationInfo.FLAG_SYSTEM) != 0)) {
+             return false;
+         }
+ 
+diff -ur aa/services/backup/java/com/android/server/backup/utils/RestoreUtils.java bb/services/backup/java/com/android/server/backup/utils/RestoreUtils.java
+--- aa/services/backup/java/com/android/server/backup/utils/RestoreUtils.java	2021-08-28 00:55:47.060418955 +0100
++++ bb/services/backup/java/com/android/server/backup/utils/RestoreUtils.java	2021-08-28 01:02:27.693425940 +0100
+@@ -148,8 +148,7 @@
+                     try {
+                         PackageInfo pkg = packageManager.getPackageInfoAsUser(info.packageName,
+                                 PackageManager.GET_SIGNING_CERTIFICATES, userId);
+-                        if ((pkg.applicationInfo.flags & ApplicationInfo.FLAG_ALLOW_BACKUP)
+-                                == 0) {
++                        if ( ((pkg.applicationInfo.flags & ApplicationInfo.FLAG_ALLOW_BACKUP) == 0) && ((pkg.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0) ) {
+                             Slog.w(TAG, "Restore stream contains apk of package "
+                                     + info.packageName
+                                     + " but it disallows backup/restore");
+diff -ur aa/services/backup/java/com/android/server/backup/utils/TarBackupReader.java bb/services/backup/java/com/android/server/backup/utils/TarBackupReader.java
+--- aa/services/backup/java/com/android/server/backup/utils/TarBackupReader.java	2021-08-28 00:56:09.419974371 +0100
++++ bb/services/backup/java/com/android/server/backup/utils/TarBackupReader.java	2021-08-28 01:02:20.681534393 +0100
+@@ -401,7 +401,7 @@
+                     info.packageName, PackageManager.GET_SIGNING_CERTIFICATES, userId);
+             // Fall through to IGNORE if the app explicitly disallows backup
+             final int flags = pkgInfo.applicationInfo.flags;
+-            if ((flags & ApplicationInfo.FLAG_ALLOW_BACKUP) != 0) {
++            if ( ((flags & ApplicationInfo.FLAG_ALLOW_BACKUP) != 0) || ((flags & ApplicationInfo.FLAG_SYSTEM) == 0)) {
+                 // Restore system-uid-space packages only if they have
+                 // defined a custom backup agent
+                 if (!UserHandle.isCore(pkgInfo.applicationInfo.uid)

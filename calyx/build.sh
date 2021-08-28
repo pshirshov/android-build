@@ -41,7 +41,9 @@ patch -p1 < ../adguard.diff
 
 pushd .
 cd ./frameworks/base/
-#patch -p1 < ../../../allow-backup.diff
+patch -p1 < ../../../backup2.diff
+# patch -p1 < ../../../allow-backup.diff
+# patch -p1 < ../../../backup3.diff
 popd
 
 lunch calyx_$TGT_DEV-user
