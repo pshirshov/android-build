@@ -1,12 +1,12 @@
-#!/bin/bash -xe
+#!/usr/bin/env -S bash -xe
 
 TGT_DEV=redfin
-LMANIFEST_DIR=/home/pavel/calyx/manifests
+LMANIFEST_DIR=`pwd`/manifests
 CUSTOM_PACKAGES="CallRecorder"
 vendor=calyx
 
 export USE_CCACHE=1
-export CCACHE_EXEC=/usr/bin/ccache
+export CCACHE_EXEC=`which ccache`
 export OFFICIAL_BUILD=true
 
 DST_DIST="`pwd`/calyx-out"
@@ -15,9 +15,10 @@ VENV="`pwd`/p2"
 
 rm -rf $DST_DIST
 mkdir $DST_DIST
+mkdir -p os
 
 pushd .
-cd os 
+cd os
 rm -rf .repo/local_manifests/
 cp -r $LMANIFEST_DIR/ .repo/local_manifests/
 
@@ -32,7 +33,7 @@ sed -i "1s;^;PRODUCT_PACKAGES += $CUSTOM_PACKAGES\n\n;" "vendor/$vendor/config/c
 
 
 
-#./vendor/calyx/scripts/setup-apv.sh $TGT_DEV 
+#./vendor/calyx/scripts/setup-apv.sh $TGT_DEV
 
 source build/envsetup.sh
 
@@ -81,7 +82,7 @@ popd
 PREV_BUILD_NUMBER=`ls $DST_ARCH | sed 's/release-'$TGT_DEV'-//g'|sort -r | head -n 1`
 cp -R $DST_DIST/out/release-$TGT_DEV-${BUILD_NUMBER}/ $DST_ARCH/
 
-ln -s $DST_ARCH ./archive 
+ln -s $DST_ARCH ./archive
 ./vendor/calyx/scripts/generate_delta.sh $TGT_DEV ${PREV_BUILD_NUMBER} ${BUILD_NUMBER}
 
 popd
