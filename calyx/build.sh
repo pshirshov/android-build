@@ -109,12 +109,14 @@ function release() {
     popd
     popd
 
-    rm -rf $DST_DIST/
+    #rm -rf $DST_DIST/
     deactivate
     rm -rf $VENV
 }
 
-#init
+if [[ ! -d os ]]; then
+    init
+fi
 reset
 apply_patches
 build

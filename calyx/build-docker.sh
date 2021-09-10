@@ -1,5 +1,6 @@
 #!/usr/bin/env -S bash -xe
 
+cp ~/.config/git/config ./docker/
 docker build ./docker -t calyxbuild
 
 mkdir -p $(pwd)/ccache

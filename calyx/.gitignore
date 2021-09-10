@@ -2,4 +2,7 @@ keys/
 os/
 venv/
 ccache/
+calyx-out/
+docker/config
+
 shell.nix
