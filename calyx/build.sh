@@ -16,36 +16,21 @@ DST_ARCH="$(pwd)/archive"
 SRC_PATCH="$(pwd)/patches"
 VENV="$(pwd)/venv"
 
-rm -rf $DST_DIST
-mkdir $DST_DIST
-
-function init() {
-    mkdir -p os
-    pushd .
-    cd os
-    repo init -u https://gitlab.com/CalyxOS/platform_manifest -b android11-qpr1
-    repo sync -j32
-    ./vendor/calyx/scripts/setup-apv.sh $TGT_DEV
-    popd
-}
-
-function reset() {
-    pushd .
-    cd os
-    repo forall -vc "git reset --hard"
-    repo forall -vc "git clean -fxd"
-    repo sync -d -j 32
-    rm -rf .repo/local_manifests/
-    cp -r $LMANIFEST_DIR/ .repo/local_manifests/
-    popd
-}
+# function init() {
+#     mkdir -p os
+#     pushd .
+#     cd os
+#     #repo init -u https://gitlab.com/CalyxOS/platform_manifest -b $CALYX_REVISION
+#     repo sync -j32
+#     popd
+# }
 
 function apply_patches() {
     pushd .
     cd os
     mkdir -p "vendor/$vendor/overlay/microg/"
-    sed -i "1s;^;PRODUCT_PACKAGE_OVERLAYS := vendor/$vendor/overlay/microg\n;" "vendor/$vendor/config/common.mk"
     sed -i "1s;^;PRODUCT_PACKAGES += $CUSTOM_PACKAGES\n\n;" "vendor/$vendor/config/common.mk"
+    sed -i "1s;^;PRODUCT_PACKAGE_OVERLAYS := vendor/$vendor/overlay/microg\n;" "vendor/$vendor/config/common.mk"
 
     sed -i 's/release.calyxinstitute.org/ota.7mind.io/g' packages/apps/Updater/res/values/config.xml
     patch -p1 <$SRC_PATCH/01-adblocking-dns.diff
@@ -59,17 +44,31 @@ function apply_patches() {
     popd
 }
 
+function reset() {
+    pushd .
+    cd os
+    rm -rf .repo/local_manifests/
+    cp -r $LMANIFEST_DIR/ .repo/local_manifests/
+    repo forall -vc "git reset --hard"
+    repo forall -vc "git clean -fxd"
+    repo sync -d -j 32
+    ./vendor/calyx/scripts/setup-apv.sh $TGT_DEV
+    popd
+    apply_patches
+}
+
 function build() {
     pushd .
     cd os
     source build/envsetup.sh
 
     lunch calyx_$TGT_DEV-user
-
     m installclean
     m target-files-package
     m otatools-package otatools-keys-package
 
+    rm -rf $DST_DIST
+    mkdir -p $DST_DIST
     cp $OUT/otatools.zip $DST_DIST
     cp $OUT/obj/PACKAGING/target_files_intermediates/*.zip $DST_DIST
     cp $OUT/otatools-keys.zip $DST_DIST
@@ -99,12 +98,14 @@ function release() {
     $DST_DIST/vendor/calyx/scripts/generate_metadata.py $TGT_DEV-ota_update-${BUILD_NUMBER}.zip
     #unzip -q redfin-factory-*.zip
     popd
-
-    PREV_BUILD_NUMBER=$(ls $DST_ARCH | sed 's/release-'$TGT_DEV'-//g' | sort -r | head -n 1)
+    mkdir -p $DST_ARCH/
     cp -R $DST_DIST/out/release-$TGT_DEV-${BUILD_NUMBER}/ $DST_ARCH/
-    ln -s $DST_ARCH ./archive
-    ./vendor/calyx/scripts/generate_delta.sh $TGT_DEV ${PREV_BUILD_NUMBER} ${BUILD_NUMBER}
 
+    if [[ $DELTA == "true" ]]; then
+        PREV_BUILD_NUMBER=$(ls $DST_ARCH | sed 's/release-'$TGT_DEV'-//g' | sort -r | head -n 1)
+        ln -s $DST_ARCH ./archive
+        ./vendor/calyx/scripts/generate_delta.sh $TGT_DEV ${PREV_BUILD_NUMBER} ${BUILD_NUMBER}
+    fi
     popd
     popd
 
@@ -113,10 +114,11 @@ function release() {
     rm -rf $VENV
 }
 
-if [[ ! -d os ]]; then
-    init
-fi
+DELTA=false
+# if [[ ! -d os ]]; then
+#     init
+# fi
+#init
 reset
-apply_patches
 build
 release
