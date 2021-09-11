@@ -5,7 +5,7 @@ docker build ./docker -t calyxbuild
 mkdir -p $(pwd)/ccache
 echo "max_size = 100G" > $(pwd)/ccache/ccache.conf
 
-CALYX_REVISION="a9831bd66ebf881c98ae3d571a3f0cfdca4c7de8"
+CALYX_REVISION="4bbbb9f00a48bc5b0849d0ec776bbecef8b8eeea"
 
 # mkdir -p os
 # pushd .

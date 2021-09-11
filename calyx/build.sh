@@ -24,6 +24,15 @@ VENV="$(pwd)/venv"
 #     repo sync -j32
 #     popd
 # }
+PATH=/work/bin:$PATH
+
+function install_repo() {
+    mkdir -p /work/bin
+    curl https://storage.googleapis.com/git-repo-downloads/repo >/work/bin/repo
+    chmod a+x /work/bin/repo
+}
+
+install_repo
 
 function apply_patches() {
     pushd .
@@ -122,3 +131,44 @@ DELTA=false
 reset
 build
 release
+
+if [[ "$#" -gt 0 ]]; then
+    arg=$1
+    shift
+
+    case $arg in
+    reset)
+        reset
+        ;;
+    build)
+        build
+        ;;
+    release)
+        release
+        ;;
+        # docker)
+        #     while [[ "$#" -gt 0 ]]; do
+        #         arg=$1
+        #         shift
+        #         case $arg in
+        #             diag)
+        #                 docker-diag
+        #             ;;
+        #             test)
+        #                 docker-test
+        #             ;;
+        #             reset)
+        #                 docker-reset
+        #             ;;
+        #         esac
+        #     done
+        #  ;;
+        #  *)
+        #     echo "Unexpected command: $*"
+        #     exit 1
+        #  ;;
+    esac
+else
+    echo "An argument required"
+    exit 1
+fi
