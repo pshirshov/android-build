@@ -2,7 +2,7 @@
 
 TGT_DEV=redfin
 LMANIFEST_DIR=$(pwd)/manifests
-CUSTOM_PACKAGES="CallRecorder"
+CUSTOM_PACKAGES="CallRecorder KdeConnect"
 vendor=calyx
 
 export USE_CCACHE=1
@@ -100,11 +100,10 @@ function release() {
     #unzip -q redfin-factory-*.zip
     popd
 
-    # PREV_BUILD_NUMBER=`ls $DST_ARCH | sed 's/release-'$TGT_DEV'-//g'|sort -r | head -n 1`
-    # cp -R $DST_DIST/out/release-$TGT_DEV-${BUILD_NUMBER}/ $DST_ARCH/
-
-    # ln -s $DST_ARCH ./archive
-    # ./vendor/calyx/scripts/generate_delta.sh $TGT_DEV ${PREV_BUILD_NUMBER} ${BUILD_NUMBER}
+    PREV_BUILD_NUMBER=$(ls $DST_ARCH | sed 's/release-'$TGT_DEV'-//g' | sort -r | head -n 1)
+    cp -R $DST_DIST/out/release-$TGT_DEV-${BUILD_NUMBER}/ $DST_ARCH/
+    ln -s $DST_ARCH ./archive
+    ./vendor/calyx/scripts/generate_delta.sh $TGT_DEV ${PREV_BUILD_NUMBER} ${BUILD_NUMBER}
 
     popd
     popd

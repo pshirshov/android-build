@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 DST_ARCH="`pwd`/archive"
 TGT_DEV=redfin

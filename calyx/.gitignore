@@ -4,5 +4,6 @@ venv/
 ccache/
 calyx-out/
 docker/config
+archive/
 
 shell.nix
