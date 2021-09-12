@@ -1,17 +1,21 @@
 #!/usr/bin/env -S bash -xe
 
+CALYX_REVISION="refs/tags/2.9.0"
+
 docker build ./docker -t calyxbuild
 
 mkdir -p $(pwd)/ccache
-echo "max_size = 100G" > $(pwd)/ccache/ccache.conf
+echo "max_size = 100G" >$(pwd)/ccache/ccache.conf
 
-CALYX_REVISION="4bbbb9f00a48bc5b0849d0ec776bbecef8b8eeea"
+function init() {
+    mkdir -p os
+    pushd .
+    cd os
+    repo init -u https://gitlab.com/CalyxOS/platform_manifest -b $CALYX_REVISION
+    popd
+}
 
-# mkdir -p os
-# pushd .
-# cd os
-# repo init -u https://gitlab.com/CalyxOS/platform_manifest -b $CALYX_REVISION
-# popd
+init
 
 docker run -t --rm \
     --user $(id -u):$(id -g) \
