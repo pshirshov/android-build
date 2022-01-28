@@ -1,6 +1,6 @@
 #!/usr/bin/env -S bash -xe
 
-CALYX_REVISION="refs/tags/2.9.0"
+CALYX_REVISION="refs/tags/2.11.0"
 
 docker build ./docker -t calyxbuild
 

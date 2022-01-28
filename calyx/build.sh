@@ -51,7 +51,7 @@ function reset() {
     cp -r $LMANIFEST_DIR/ .repo/local_manifests/
     repo forall -vc "git reset --hard"
     repo forall -vc "git clean -fxd"
-    repo sync -d -j 32
+    repo sync -d -j 16
     ./vendor/calyx/scripts/setup-apv.sh $TGT_DEV
     popd
     apply_patches
